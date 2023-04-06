@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:pdfx/pdfx.dart';
 import 'package:spreadsheet_decoder/spreadsheet_decoder.dart';
 
 /// Main class for thumbnailer plugin
@@ -119,36 +118,6 @@ class Thumbnailer {
       return Center(
         child: Image.memory(
           resolvedData,
-          fit: BoxFit.fitWidth,
-          semanticLabel: name,
-          width: widgetSize,
-          filterQuality: FilterQuality.none,
-        ),
-      );
-    },
-    'application/pdf': (
-      String? name,
-      String mimeType,
-      int? dataSize,
-      DataResolvingFunction getData,
-      double widgetSize,
-      WidgetDecoration? widgetDecoration,
-    ) async {
-      final Uint8List resolvedData = await getData();
-      final PdfDocument document = await PdfDocument.openData(resolvedData);
-      final PdfPage page = await document.getPage(1);
-      final PdfPageImage pageImage = (await page.render(
-        width: page.width,
-        height: page.height,
-      ))!;
-      // ignore: unawaited_futures
-      Future.wait<void>(<Future<void>>[
-        page.close(),
-        document.close(),
-      ]);
-      return Center(
-        child: Image.memory(
-          pageImage.bytes,
           fit: BoxFit.fitWidth,
           semanticLabel: name,
           width: widgetSize,
@@ -363,20 +332,20 @@ class Thumbnailer {
 /// strategies in [Thumbnailer._generationStrategies] has to be aware of null value
 class Thumbnail extends StatefulWidget {
   ///constructor
-  const Thumbnail({
-    required this.mimeType,
-    required this.widgetSize,
-    this.dataResolver,
-    Key? key,
-    this.dataSize,
-    this.name,
-    this.decoration,
-    this.onlyIcon,
-    this.useWaterMark,
-    this.useWrapper,
-    this.onlyName,
-    this.errorBuilder
-  }) : super(key: key);
+  const Thumbnail(
+      {required this.mimeType,
+      required this.widgetSize,
+      this.dataResolver,
+      Key? key,
+      this.dataSize,
+      this.name,
+      this.decoration,
+      this.onlyIcon,
+      this.useWaterMark,
+      this.useWrapper,
+      this.onlyName,
+      this.errorBuilder})
+      : super(key: key);
 
   /// If non-null, the style to use for this thumbnail.
   final WidgetDecoration? decoration;
@@ -448,8 +417,9 @@ class ThumbnailState extends State<Thumbnail> {
         future: _thumbnailFuture,
         builder: (BuildContext context, AsyncSnapshot<Widget> snapshot) {
           if (snapshot.hasError) {
-            if (widget.errorBuilder!=null){
-              return widget.errorBuilder!.call(context,Exception(snapshot.error!.toString()));
+            if (widget.errorBuilder != null) {
+              return widget.errorBuilder!
+                  .call(context, Exception(snapshot.error!.toString()));
             } else {
               // ignore: only_throw_errors
               throw snapshot.error!;
